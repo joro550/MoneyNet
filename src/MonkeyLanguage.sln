@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkey.Core", "Monkey.Core\Monkey.Core.csproj", "{C8A2F665-922F-4012-9E98-1B12C1191258}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkey.Core.Tests.Unit", "Monkey.Core.Tests.Unit\Monkey.Core.Tests.Unit.csproj", "{CEB50E46-47CA-47B2-9517-3A7BD5001593}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8A2F665-922F-4012-9E98-1B12C1191258}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8A2F665-922F-4012-9E98-1B12C1191258}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8A2F665-922F-4012-9E98-1B12C1191258}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8A2F665-922F-4012-9E98-1B12C1191258}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEB50E46-47CA-47B2-9517-3A7BD5001593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEB50E46-47CA-47B2-9517-3A7BD5001593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEB50E46-47CA-47B2-9517-3A7BD5001593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEB50E46-47CA-47B2-9517-3A7BD5001593}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
