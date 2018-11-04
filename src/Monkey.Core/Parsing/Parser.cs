@@ -1,61 +1,59 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Monkey.Core.Lexing;
 
 namespace Monkey.Core.Parsing
 {
     public class Parser
     {
-        private readonly Dictionary<TokenType, Func<TokenCollection, IStatement>> TokenToStatementMap 
-            = new Dictionary<TokenType, Func<TokenCollection, IStatement>>
-        {
-            {TokenType.LET, LetStatement.CreateFromTokens},
-            {TokenType.RETURN, ReturnStatement.CreateFromTokens}
-        };
-        
-        
-        public Program ParseTokens(IEnumerable<Token> tokens)
-        {
-            var tokenCollection = new TokenCollection(tokens.ToList());
-            var program = new Program();
+        private readonly Lexer _lexer;
+        private ParserTokens _parserTokens;
 
-            var currentToken = tokenCollection.Current();
+        public Parser() 
+            => _lexer = new Lexer();
+
+        public IProgram Parse(string scriptText)
+        {
+            var tokens = ParseScriptIntoQueue(scriptText);
+            var statements = new List<IStatement>();
+            _parserTokens = new ParserTokens(tokens);
+
+            var currentToken = _parserTokens.NextToken();
             while (currentToken.TokenType != TokenType.EOF)
             {
-                if (TokenToStatementMap.ContainsKey(currentToken.TokenType))
+                IStatement statement = new NullStatement();
+                switch (currentToken.TokenType)
                 {
-                    var statement = TokenToStatementMap[currentToken.TokenType](tokenCollection);
-                    program.AddStatement(statement);
+                    case TokenType.LET:
+                    {
+                        statement = ParseLetStatement(currentToken); 
+                        break;
+                    }
                 }
 
-                currentToken = tokenCollection.Next();
+                statements.Add(statement);
+                currentToken = _parserTokens.NextToken();
             }
-
-            return program;
+            
+            return new Program(statements);
         }
-    }
 
-    public class TokenCollection
-    {
-        private readonly List<Token> _tokens;
-        private int _currentPosition;
-        
-        public TokenCollection(List<Token> tokens)
+        private IStatement ParseLetStatement(Token currentToken)
         {
-            _tokens = tokens;
+            var statement = new LetStatement(currentToken);
+
+            var peekToken = _parserTokens.PeekToken();
+            if (peekToken.TokenType != TokenType.IDENT)
+                return new NullStatement();
+
+            var newToken = _parserTokens.NextToken();
+            statement.Name = newToken.Value;
+
+            while (newToken.TokenType != TokenType.SEMICOLON)
+                newToken = _parserTokens.NextToken();
+            return statement;
         }
 
-        public Token Current() 
-            => _tokens[_currentPosition];
-
-        public Token Peek() 
-            => _tokens[_currentPosition + 1];
-
-        public Token Next()
-        {
-            _currentPosition++;
-            return Current();
-        }
+        private Queue<Token> ParseScriptIntoQueue(string scriptText) 
+            => new Queue<Token>(_lexer.ParseScript(scriptText));
     }
 }

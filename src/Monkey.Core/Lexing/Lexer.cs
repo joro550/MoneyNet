@@ -5,7 +5,7 @@ namespace Monkey.Core.Lexing
 {
     public class Lexer
     {
-        private readonly Dictionary<string, TokenType> Keywords = new Dictionary<string, TokenType>
+        private readonly Dictionary<string, TokenType> _keywords = new Dictionary<string, TokenType>
         {
             {"fn", TokenType.FUNCTION},
             {"let", TokenType.LET},
@@ -48,21 +48,19 @@ namespace Monkey.Core.Lexing
             {
                 case "=":
                 {
-                    if (script.Peek() == '=')
-                    {
-                        script.Next();
-                        return Token(TokenType.EQ, "==");
-                    }
+                    if (script.Peek() != '=') 
+                        return Token(TokenType.ASSIGN, currentToken);
+                    
+                    script.Next();
+                    return Token(TokenType.EQ, "==");
 
-                    return Token(TokenType.ASSIGN, currentToken);
                 }
                 case "!":
-                    if (script.Peek() == '=')
-                    {
-                        script.Next();
-                        return Token(TokenType.NOT_EQ, "!=");
-                    }
-                    return Token(TokenType.BANG, currentToken);
+                    if (script.Peek() != '=') 
+                        return Token(TokenType.BANG, currentToken);
+                    
+                    script.Next();
+                    return Token(TokenType.NOT_EQ, "!=");
                 case "+":
                     return Token(TokenType.PLUS, currentToken);
                 case "-":
@@ -108,8 +106,8 @@ namespace Monkey.Core.Lexing
                     while (char.IsLetter(script.Peek()))
                         identifier += script.Next();
 
-                    return Token(Keywords.ContainsKey(identifier) 
-                        ? Keywords[identifier] 
+                    return Token(_keywords.ContainsKey(identifier) 
+                        ? _keywords[identifier] 
                         : TokenType.IDENT, identifier);
                 }
             }

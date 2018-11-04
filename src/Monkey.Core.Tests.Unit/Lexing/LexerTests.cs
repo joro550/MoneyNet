@@ -39,16 +39,17 @@ namespace Monkey.Core.Tests.Unit.Lexing
             var expectedToken = new Token(expectedTokenType, script);
             var actualToken = lexer.ParseScript(script);
 
-            Assert.Equal(1, actualToken.Count);
+            Assert.Equal(2, actualToken.Count);
             Assert.Equal(expectedToken.TokenType, actualToken[0].TokenType);
             Assert.Equal(expectedToken.Value, actualToken[0].Value);
+            Assert.Equal(TokenType.EOF, actualToken[1].TokenType);
         }
 
         [Theory]
-        [InlineData("let number = 5", TokenType.LET, TokenType.IDENT, TokenType.ASSIGN, TokenType.INT)]
+        [InlineData("let number = 5", TokenType.LET, TokenType.IDENT, TokenType.ASSIGN, TokenType.INT, TokenType.EOF)]
         [InlineData("let add = fn(x, y) {}", TokenType.LET, TokenType.IDENT, 
             TokenType.ASSIGN, TokenType.FUNCTION, TokenType.LeftParen, TokenType.IDENT, 
-            TokenType.COMMA, TokenType.IDENT, TokenType.RightParen, TokenType.LeftBrace, TokenType.RightBrace)]
+            TokenType.COMMA, TokenType.IDENT, TokenType.RightParen, TokenType.LeftBrace, TokenType.RightBrace, TokenType.EOF)]
         
         public void WhenALineOfScriptIsProvided_ThenTokensAreAsExpected(string script,
             params TokenType[] expectedTokens)
