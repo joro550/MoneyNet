@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Monkey.Core.Lexing;
@@ -19,6 +20,13 @@ namespace Monkey.Core.Parsing
     
     public class NullStatement : IStatement
     {
+        public string Error { get; }
+
+        public NullStatement(string error)
+        {
+            Error = error;
+        }
+        
         public string TokenLiteral() => string.Empty;
     }
 
@@ -41,6 +49,8 @@ namespace Monkey.Core.Parsing
     {
         string TokenLiteral();
         List<IStatement> GetStatements();
+        
+        IEnumerable<string> Errors { get; }
     }
 
     public class Program : INode, IProgram
@@ -57,5 +67,8 @@ namespace Monkey.Core.Parsing
 
         public List<IStatement> GetStatements() 
             => _statements;
+
+        public IEnumerable<string> Errors 
+            => _statements.OfType<NullStatement>().Select(statement => statement.Error);
     }
 }

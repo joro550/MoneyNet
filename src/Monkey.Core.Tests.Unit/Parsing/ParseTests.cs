@@ -21,6 +21,17 @@ let foobar = 1000;";
             foreach (var identifier in expectedIdentifiers)
                 Assert.Contains(identifier,
                     program.GetStatements().OfType<LetStatement>().Select(statement => statement.Name));
-        } 
+        }
+
+        [Fact]
+        public void GivenInvalidLetStatement_ThenCorrectErrorsAreReturned()
+        {
+            const string script = "let x 5;";
+            
+            var parser = new Parser();
+            var program = parser.Parse(script);
+            Assert.Single(program.Errors);
+            Assert.Equal("Expected '=' but have INT", program.Errors.Single());
+        }
     }
 }

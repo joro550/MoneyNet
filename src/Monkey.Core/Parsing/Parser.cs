@@ -20,7 +20,7 @@ namespace Monkey.Core.Parsing
             var currentToken = _parserTokens.NextToken();
             while (currentToken.TokenType != TokenType.EOF)
             {
-                IStatement statement = new NullStatement();
+                IStatement statement = new NullStatement(string.Empty);
                 switch (currentToken.TokenType)
                 {
                     case TokenType.LET:
@@ -43,14 +43,25 @@ namespace Monkey.Core.Parsing
 
             var peekToken = _parserTokens.PeekToken();
             if (peekToken.TokenType != TokenType.IDENT)
-                return new NullStatement();
+                return NullStatement(currentToken, string.Empty);
 
             var newToken = _parserTokens.NextToken();
             statement.Name = newToken.Value;
+            
+            newToken = _parserTokens.NextToken();
+            if (newToken.TokenType != TokenType.EQ)
+                return NullStatement(newToken, $"Expected '=' but have {newToken.TokenType}");
 
             while (newToken.TokenType != TokenType.SEMICOLON)
                 newToken = _parserTokens.NextToken();
             return statement;
+        }
+
+        private IStatement NullStatement(Token newToken, string errorMessage)
+        {
+            while (newToken.TokenType != TokenType.SEMICOLON)
+                newToken = _parserTokens.NextToken();
+            return new NullStatement(errorMessage);
         }
 
         private Queue<Token> ParseScriptIntoQueue(string scriptText) 
