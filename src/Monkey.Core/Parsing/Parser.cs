@@ -1,5 +1,8 @@
-using System.Collections.Generic;
+using System;
 using Monkey.Core.Lexing;
+using System.Collections.Generic;
+using Monkey.Core.Parsing.Expressions;
+using Monkey.Core.Parsing.Statements;
 
 namespace Monkey.Core.Parsing
 {
@@ -7,6 +10,16 @@ namespace Monkey.Core.Parsing
     {
         private readonly Lexer _lexer;
         private ParserTokens _parserTokens;
+
+        private readonly Dictionary<TokenType, Func<Token, IExpression>> _parsePrefixes
+            = new Dictionary<TokenType, Func<Token, IExpression>>
+            {
+                {TokenType.IDENT, ParseIdentifier},
+                {TokenType.INT, ParseInteger}
+            };
+        
+        private Dictionary<TokenType, Func<IExpression>> _parseInfix
+            = new Dictionary<TokenType, Func<IExpression>>();
 
         public Parser() 
             => _lexer = new Lexer();
@@ -20,12 +33,22 @@ namespace Monkey.Core.Parsing
             var currentToken = _parserTokens.NextToken();
             while (currentToken.TokenType != TokenType.EOF)
             {
-                IStatement statement = new NullStatement(string.Empty);
+                IStatement statement;
                 switch (currentToken.TokenType)
                 {
                     case TokenType.LET:
                     {
                         statement = ParseLetStatement(currentToken); 
+                        break;
+                    }
+                    case TokenType.RETURN:
+                    {
+                        statement = ParseReturnStatement(currentToken);
+                        break;
+                    }
+                    default:
+                    {
+                        statement = ParseExpressionStatement(currentToken);
                         break;
                     }
                 }
@@ -35,6 +58,16 @@ namespace Monkey.Core.Parsing
             }
             
             return new Program(statements);
+        }
+
+        private IStatement ParseReturnStatement(Token currentToken)
+        {
+            var statement = new ReturnStatement(currentToken);
+            var newToken = _parserTokens.NextToken();
+
+            while (newToken.TokenType != TokenType.SEMICOLON)
+                newToken = _parserTokens.NextToken();
+            return statement;
         }
 
         private IStatement ParseLetStatement(Token currentToken)
@@ -49,12 +82,33 @@ namespace Monkey.Core.Parsing
             statement.Name = newToken.Value;
             
             newToken = _parserTokens.NextToken();
-            if (newToken.TokenType != TokenType.EQ)
+            if (newToken.TokenType != TokenType.ASSIGN)
                 return NullStatement(newToken, $"Expected '=' but have {newToken.TokenType}");
 
             while (newToken.TokenType != TokenType.SEMICOLON)
                 newToken = _parserTokens.NextToken();
             return statement;
+        }
+
+        private IStatement ParseExpressionStatement(Token currentToken)
+        {
+            var expressionStatement = new ExpressionStatement(currentToken)
+            {
+                Expression = ParseExpression(currentToken, Priority.Lowest)
+            };
+
+            var newToken = _parserTokens.PeekToken();
+            if (newToken.TokenType == TokenType.SEMICOLON)
+                _parserTokens.NextToken();
+            
+            return expressionStatement;
+        }
+
+        private IExpression ParseExpression(Token currentToken, Priority priority)
+        {
+            if (_parsePrefixes.ContainsKey(currentToken.TokenType))
+                return _parsePrefixes[currentToken.TokenType](currentToken);
+            return null;
         }
 
         private IStatement NullStatement(Token newToken, string errorMessage)
@@ -64,7 +118,24 @@ namespace Monkey.Core.Parsing
             return new NullStatement(errorMessage);
         }
 
+        private static IExpression ParseIdentifier(Token currentToken) 
+            => new Identifier(currentToken);
+
+        private static IExpression ParseInteger(Token currentToken)
+        {
+            var expression = new IntegerStatement(currentToken);
+            if (int.TryParse(currentToken.Value, out var value))
+                expression.Value = value;
+            
+            return expression;
+        }
+
         private Queue<Token> ParseScriptIntoQueue(string scriptText) 
             => new Queue<Token>(_lexer.ParseScript(scriptText));
+    }
+
+    public enum Priority
+    {
+        Lowest
     }
 }

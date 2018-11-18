@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Monkey.Core.Parsing;
+using Monkey.Core.Parsing.Statements;
 using Xunit;
 
 namespace Monkey.Core.Tests.Unit.Parsing
 {
-    public class ParseTests
+    public class LetTests
     {
         [Fact]
         public void GivenALetStatements_ThenProgramHasOnlyLetStatements()
