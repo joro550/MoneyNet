@@ -5,30 +5,26 @@ namespace Monkey.Core.Lexing
 {
     public class Script
     {
-        private readonly string _script;
-        private int _currentPosition;
+        private readonly Queue<char> _scriptLetters;
+        private string _currentLetter = string.Empty;
 
-
-        public Script(string script)
-        {
-            _script = script;
-        }
+        public Script(string script) 
+            => _scriptLetters = new Queue<char>(script);
 
         public char Peek()
         {
-            var index = _currentPosition+1;
-            return index >= _script.Length ? ' ' : _script[index];
+            _scriptLetters.TryPeek(out var r);
+            return r;
         }
 
         public string Current() 
-            => _script[_currentPosition].ToString();
+            => _currentLetter;
 
         public string Next()
         {
-            _currentPosition++;
-            return _currentPosition >= _script.Length 
-                ? null 
-                : _script[_currentPosition].ToString();
+            var result = _scriptLetters.TryDequeue(out var currentLetter);
+            _currentLetter = result ? currentLetter.ToString() : null;
+            return _currentLetter;
         }
     }
 }

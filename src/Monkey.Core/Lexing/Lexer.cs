@@ -31,7 +31,6 @@ namespace Monkey.Core.Lexing
                 }
 
                 tokens.Add(ParseToken(currentToken, script));
-
                 currentToken = script.Next();
             }
 
@@ -50,15 +49,13 @@ namespace Monkey.Core.Lexing
                 {
                     if (script.Peek() != '=') 
                         return Token(TokenType.ASSIGN, currentToken);
-                    
                     script.Next();
                     return Token(TokenType.EQ, "==");
-
                 }
                 case "!":
                     if (script.Peek() != '=') 
                         return Token(TokenType.BANG, currentToken);
-                    
+
                     script.Next();
                     return Token(TokenType.NOT_EQ, "!=");
                 case "+":
@@ -115,6 +112,5 @@ namespace Monkey.Core.Lexing
 
         private static Token Token(TokenType tokenType, string value) 
             => new Token(tokenType, value);
-
     }
 }
