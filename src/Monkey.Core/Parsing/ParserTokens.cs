@@ -6,6 +6,7 @@ namespace Monkey.Core.Parsing
     internal class ParserTokens
     {
         private readonly Queue<Token> _tokens;
+        private Token _currentToken;
 
         public ParserTokens(Queue<Token> tokens) 
             => _tokens = tokens;
@@ -13,6 +14,7 @@ namespace Monkey.Core.Parsing
         public Token NextToken()
         {
             _tokens.TryDequeue(out var t);
+            _currentToken = t;
             return t;
         }
 
@@ -21,5 +23,8 @@ namespace Monkey.Core.Parsing
             _tokens.TryPeek(out var t);
             return t;
         }
+
+        public Token CurrentToken() 
+            => _currentToken;
     }
 }

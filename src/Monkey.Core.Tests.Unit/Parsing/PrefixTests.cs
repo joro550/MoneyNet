@@ -6,23 +6,22 @@ using Xunit;
 
 namespace Monkey.Core.Tests.Unit.Parsing
 {
-    public class IntegerTests
+    public class PrefixTests
     {
-        [Fact]
-        public void GivenAnIdentifierWhenParsing_ThenCorrectExpressionIsReturned()
+        [Theory]
+        [InlineData("-5;", "-")]
+        [InlineData("!5;", "!")]
+        public void GivenAnIdentifierWhenParsing_ThenCorrectExpressionIsReturned(string script, string expectedOperator)
         {
-            const string script = @"5;";
-            
             var parser = new Parser();
             var program = parser.Parse(script);
-
             var statement = program.GetStatements().First() as ExpressionStatement;
-            var expression = statement?.Expression as IntegerExpression;
+            var expression = statement?.Expression as PrefixExpression;
 
             Assert.NotNull(statement);
             Assert.NotNull(expression);
-            Assert.Single(program.GetStatements());
-            Assert.Equal(5, expression.Value);
+            Assert.Equal(expectedOperator, expression.Operator);
+            Assert.IsType<IntegerExpression>(expression.Right);
         }
     }
 }

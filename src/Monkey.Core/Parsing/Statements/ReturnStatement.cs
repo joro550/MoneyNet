@@ -1,4 +1,5 @@
 using Monkey.Core.Lexing;
+using Monkey.Core.Parsing.Expressions;
 
 namespace Monkey.Core.Parsing.Statements
 {
