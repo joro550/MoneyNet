@@ -1,103 +1,107 @@
-using Monkey.Core.Lexing;
 using System.Collections.Generic;
-using Monkey.Core.Parsing.Statements;
+using Monkey.Core.Lexing;
 
 namespace Monkey.Core.Parsing
 {
-    public class Parser
+    public static class Parser
     {
-        private readonly Lexer _lexer;
-        private ParserTokens _parserTokens;
-
-        public Parser() 
-            => _lexer = new Lexer();
-
-        public IProgram Parse(string scriptText)
+        public static SyntaxTree ParseScript(string script)
         {
-            var tokens = ParseScriptIntoQueue(scriptText);
-            var statements = new List<IStatement>();
-            _parserTokens = new ParserTokens(tokens);
+            var tokens = new Script2<Token>(new Lexer()
+                .ParseScript(script));
 
-            var currentToken = _parserTokens.NextToken();
-            while (currentToken.TokenType != TokenType.EOF)
+            var statements = new List<Statement>();
+            for (var token = tokens.Current(); token.TokenType != TokenType.EOF; token = tokens.Next())
             {
-                IStatement statement;
-                switch (currentToken.TokenType)
-                {
-                    case TokenType.LET:
-                    {
-                        statement = ParseLetStatement(currentToken); 
-                        break;
-                    }
-                    case TokenType.RETURN:
-                    {
-                        statement = ParseReturnStatement(currentToken);
-                        break;
-                    }
-                    default:
-                    {
-                        statement = ParseExpressionStatement();
-                        break;
-                    }
-                }
-
-                statements.Add(statement);
-                currentToken = _parserTokens.NextToken();
+                var parsers = new LetParser(tokens);
+                statements.Add(parsers.ParseStatement(token));
             }
-            
-            return new Program(statements);
+            return new SyntaxTree {Statements = statements};
         }
+    }
 
-        private IStatement ParseReturnStatement(Token currentToken)
+    public abstract class StatementParser
+    {
+        protected Script2<Token> Tokens { get; }
+        protected StatementParser Next { get; private set; }
+
+        protected StatementParser(Script2<Token> tokens)
         {
-            var statement = new ReturnStatement(currentToken);
-            var newToken = _parserTokens.NextToken();
-
-            while (newToken.TokenType != TokenType.SEMICOLON)
-                newToken = _parserTokens.NextToken();
-            return statement;
+            Tokens = tokens;
         }
 
-        private IStatement ParseLetStatement(Token currentToken)
+        public StatementParser SetNext(StatementParser statementParser)
         {
-            var statement = new LetStatement(currentToken);
-
-            var peekToken = _parserTokens.PeekToken();
-            if (peekToken.TokenType != TokenType.IDENT)
-                return NullStatement(currentToken, string.Empty);
-
-            var newToken = _parserTokens.NextToken();
-            statement.Name = newToken.Value;
-            
-            newToken = _parserTokens.NextToken();
-            if (newToken.TokenType != TokenType.ASSIGN)
-                return NullStatement(newToken, $"Expected '=' but have {newToken.TokenType}");
-
-            while (newToken.TokenType != TokenType.SEMICOLON)
-                newToken = _parserTokens.NextToken();
-            return statement;
+            Next = statementParser;
+            return this;
         }
 
-        private IStatement ParseExpressionStatement() 
-            => new ExpressionFactory().GetExpression(this);
+        public abstract Statement ParseStatement(Token token);
+    }
 
-        private IStatement NullStatement(Token newToken, string errorMessage)
+    public class LetParser : StatementParser
+    {
+        public LetParser(Script2<Token> tokens) 
+            : base(tokens)
         {
-            while (newToken.TokenType != TokenType.SEMICOLON)
-                newToken = _parserTokens.NextToken();
-            return new NullStatement(errorMessage);
         }
 
-        public Token PeekToken() 
-            => _parserTokens.PeekToken();
+        public override Statement ParseStatement(Token token)
+        {
+            if (token.TokenType != TokenType.LET)
+                return Next?.ParseStatement(token);
 
-        public Token NextToken() 
-            => _parserTokens.NextToken();
+            var identifierToken = Tokens.Next();
+            Tokens.Next(); // =
+            Tokens.Next(); // value
+            Tokens.Next(); // semi colon
+            return new LetStatement(token)
+            {
+                Name = Identifier.CreateIdentifier(identifierToken.Value)
+            };
+        }
+    }
 
-        public Token CurrentToken() 
-            => _parserTokens.CurrentToken();
+    public class SyntaxTree
+    {
+        public List<Statement> Statements = new List<Statement>();
+        
+    }
 
-        private Queue<Token> ParseScriptIntoQueue(string scriptText) 
-            => new Queue<Token>(_lexer.ParseScript(scriptText));
+    public class Identifier
+    {
+        public TokenType Token { get; }
+        public string Value { get; }
+
+        private Identifier(TokenType token, string value)
+        {
+            Token = token;
+            Value = value;
+        }
+
+        public static Identifier CreateIdentifier(string value) 
+            => new Identifier(TokenType.IDENT, value);
+    }
+
+    public abstract class Statement
+    {
+        
+    }
+
+    public abstract class Expression
+    {
+        
+    }
+
+    public class LetStatement : Statement
+    {
+        private Token Token { get; }
+        public Identifier Name { get; set; } 
+        public Expression Value { get; set; }
+
+        public LetStatement(Token token)
+        {
+            Token = token;
+        }
     }
 }

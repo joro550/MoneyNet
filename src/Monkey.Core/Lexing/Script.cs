@@ -27,4 +27,33 @@ namespace Monkey.Core.Lexing
             return _currentLetter;
         }
     }
+    
+    public class Script2<T>
+    {
+        private readonly Queue<T> _scriptLetters;
+        private T _currentLetter;
+
+        public Script2(IEnumerable<T> script)
+        {
+            _scriptLetters = new Queue<T>(script);
+            // get first token
+            Next();
+        }
+
+        public T Peek()
+        {
+            _scriptLetters.TryPeek(out var r);
+            return r;
+        }
+
+        public T Current() 
+            => _currentLetter;
+
+        public T Next()
+        {
+            var result = _scriptLetters.TryDequeue(out var currentLetter);
+            _currentLetter = result ? currentLetter : default;
+            return _currentLetter;
+        }
+    }
 }
