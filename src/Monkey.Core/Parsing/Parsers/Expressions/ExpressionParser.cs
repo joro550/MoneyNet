@@ -7,6 +7,8 @@ namespace Monkey.Core.Parsing.Parsers.Expressions
     {
         protected Script2<Token> Tokens { get; }
         protected ExpressionParser Next { get; private set; }
+        
+        public delegate Expression Parse(Token token, ExpressionPriority priority);
 
         protected ExpressionParser(Script2<Token> tokens)
         {

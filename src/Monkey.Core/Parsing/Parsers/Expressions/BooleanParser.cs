@@ -3,15 +3,15 @@ using Monkey.Core.Parsing.Expressions;
 
 namespace Monkey.Core.Parsing.Parsers.Expressions
 {
-    public class IdentifierParser : ExpressionParser
+    public class BooleanParser : ExpressionParser
     {
-        public IdentifierParser(Script2<Token> tokens) : base(tokens)
+        public BooleanParser(Script2<Token> tokens) : base(tokens)
         {
         }
 
         public override Expression ParseExpression(Token token, ExpressionPriority lowest) =>
-            token.TokenType != TokenType.IDENT
+            token.TokenType != TokenType.TRUE && token.TokenType != TokenType.FALSE
                 ? Next?.ParseExpression(token, lowest)
-                : Identifier.Create(token.Value);
+                : Boolean.Create(bool.Parse(token.Value));
     }
 }

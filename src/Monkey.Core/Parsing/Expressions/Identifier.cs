@@ -13,7 +13,7 @@ namespace Monkey.Core.Parsing.Expressions
             Value = value;
         }
 
-        public static Identifier CreateIdentifier(string value) 
+        public static Identifier Create(string value) 
             => new Identifier(TokenType.IDENT, value);
     }
 }

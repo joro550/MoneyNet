@@ -22,7 +22,7 @@ namespace Monkey.Core.Parsing.Parsers.Statements
             Tokens.Next(); // semi colon
             return new LetStatement(token)
             {
-                Name = Identifier.CreateIdentifier(identifierToken.Value)
+                Name = Identifier.Create(identifierToken.Value)
             };
         }
     }
