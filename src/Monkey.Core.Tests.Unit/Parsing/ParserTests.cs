@@ -1,4 +1,6 @@
 using Monkey.Core.Parsing;
+using Monkey.Core.Parsing.Expressions;
+using Monkey.Core.Parsing.Statements;
 using Xunit;
 
 namespace Monkey.Core.Tests.Unit.Parsing
@@ -30,7 +32,31 @@ namespace Monkey.Core.Tests.Unit.Parsing
             Assert.Equal("x", firstStatement.Name.Value);
             Assert.Equal("y", secondStatement.Name.Value);
             Assert.Equal("foobar", thirdStatement.Name.Value);
+        }
+        
+        [Fact]
+        public void GivenAReturnStatement_ThenStatementsAreValid()
+        {
+            const string script = @"return 5; return 10; return 993322;";
+            var syntaxTree = Parser.ParseScript(script);
+            Assert.NotNull(syntaxTree);
+            Assert.Equal(3, syntaxTree.Statements.Count);
 
+            Assert.IsType<ReturnStatement>(syntaxTree.Statements[0]);
+            Assert.IsType<ReturnStatement>(syntaxTree.Statements[1]);
+            Assert.IsType<ReturnStatement>(syntaxTree.Statements[2]);
+        }
+        
+        [Fact]
+        public void GivenAnExpressionStatement_ThenStatementsAreValid()
+        {
+            const string script = @"foobar;";
+            var syntaxTree = Parser.ParseScript(script);
+            Assert.NotNull(syntaxTree);
+            var statement = Assert.Single(syntaxTree.Statements);
+            var expression = Assert.IsType<ExpressionStatement>(statement);
+            var identifier = Assert.IsType<Identifier>(expression.Expression);
+            Assert.Equal("foobar", identifier.Value);
         }
     }
 }
